@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2022-07-04T15:57:38
+# Project created by QtCreator 2022-07-04T16:03:39
 #
 #-------------------------------------------------
 
@@ -8,15 +8,14 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = prompt
+TARGET = GLWidget
 TEMPLATE = app
 
+win32{
+    LIBS+=-lopengl32
+}
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    glwidget.cpp
+        glwidget.cpp
 
-HEADERS  += mainwindow.h \
-    glwidget.h
-
-FORMS    += mainwindow.ui
+HEADERS  += glwidget.h

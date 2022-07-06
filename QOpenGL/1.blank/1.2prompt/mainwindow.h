@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QKeyEvent>
 
 namespace Ui {
 class MainWindow;
@@ -15,8 +16,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 private:
     Ui::MainWindow *ui;
+
+    bool mFullScreen;
 };
 
 #endif // MAINWINDOW_H

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QResizeEvent>
+#include <QKeyEvent>
 
 #include "glwidget.h"
 
@@ -21,10 +22,14 @@ public:
 protected:
     void resizeEvent(QResizeEvent *);
 
+    void keyPressEvent(QKeyEvent *event);
+
 private:
     Ui::MainWindow *ui;
 
     GLWidget *glWidget;
+
+    bool mFullScreen;
 };
 
 #endif // MAINWINDOW_H
