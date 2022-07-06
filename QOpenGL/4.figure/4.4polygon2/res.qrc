@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>glsl/fsrc.frag</file>
+        <file>glsl/vsrc.vert</file>
+    </qresource>
+</RCC>
