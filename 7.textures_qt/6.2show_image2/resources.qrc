@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>resources/fsrc.glsl</file>
-        <file>resources/vsrc.glsl</file>
-        <file>resources/bird.jpg</file>
-    </qresource>
-</RCC>
