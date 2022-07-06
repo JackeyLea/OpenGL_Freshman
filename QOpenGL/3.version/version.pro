@@ -11,6 +11,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = version
 TEMPLATE = app
 
+win32{
+    LIBS += -lopengl32
+}
 
 SOURCES += main.cpp\
         glwidget.cpp

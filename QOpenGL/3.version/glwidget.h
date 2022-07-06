@@ -4,7 +4,9 @@
 #include <QWidget>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
-
+#include <QKeyEvent>
+#include <QApplication>
+#include <QSurfaceFormat>
 #include <QDebug>
 
 class GLWidget : public QOpenGLWidget,public QOpenGLFunctions
@@ -19,6 +21,11 @@ protected:
     void initializeGL();
     void resizeGL(int w, int h);
     void paintGL();
+
+    void keyPressEvent(QKeyEvent *event);
+
+private:
+    bool mFullScreen;
 };
 
 #endif // GLWIDGET_H
