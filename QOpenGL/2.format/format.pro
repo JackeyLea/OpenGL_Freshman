@@ -8,11 +8,11 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = inherit
+TARGET = format
 TEMPLATE = app
 
 win32{
-    LIBS+=-lopengl32
+    LIBS += -lopengl32
 }
 
 SOURCES += main.cpp\
