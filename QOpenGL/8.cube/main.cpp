@@ -1,14 +1,11 @@
-#include "glwindow.h"
-
+#include "glwidget.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    GLWindow w;
-    QSurfaceFormat fmt;
-    fmt.setSamples(4);
-    w.setFormat(fmt);
+    GLWidget w;
     w.show();
+
     return a.exec();
 }

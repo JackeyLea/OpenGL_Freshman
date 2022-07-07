@@ -1,17 +1,25 @@
-#include "glwindow.h"
+#include "glwidget.h"
 
-GLWindow::GLWindow(QWidget *parent)
+GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
-    ,m_rtri(0.0f)
-    ,m_rquad(0.0f)
-{}
-
-GLWindow::~GLWindow()
+    , mFullScreen(false)
+    , m_rtri(0.0f)
+    , m_rquad(0.0f)
 {
-    glDeleteBuffers(4,&m_vboIds[0]);
+    QSurfaceFormat format;
+    format.setSamples(24);
+
+    setFormat(format);
+    showNormal();
 }
 
-void GLWindow::initializeGL()
+GLWidget::~GLWidget()
+{
+    glDeleteBuffers(4,&m_vboIds[0]);
+    program->deleteLater();
+}
+
+void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();//初始化OpenGL上下文内容
     glClearColor(0.0f,0.0f,0.0f,1.0f);//将缓冲区清空为RGBA指定的颜色
@@ -19,28 +27,36 @@ void GLWindow::initializeGL()
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_RGBA|GL_ALPHA_BITS);
     glEnable(GL_DEPTH_TEST);//使用深度缓冲区测试
 
+    qDebug()<<"Used OpenGL Version: "<<context()->format().majorVersion()<<"."<<context()->format().minorVersion();
+
+    qDebug()<<"OpenGL info: ";
+    qDebug()<<"             VENDOR:        "<<(const char*)glGetString(GL_VENDOR);
+    qDebug()<<"             RENDERER:      "<<(const char*)glGetString(GL_RENDERER);
+    qDebug()<<"             VERSION:       "<<(const char*)glGetString(GL_VERSION);
+    qDebug()<<"             GLSL VERSION:  "<<(const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+
     program = new QOpenGLShaderProgram;
-    program->addShaderFromSourceFile(QOpenGLShader::Vertex,":/resources/vsrc.glsl");
-    program->addShaderFromSourceFile(QOpenGLShader::Fragment,":/resources/fsrc.glsl");
-    program->bindAttributeLocation("aPos",0);
-    program->bindAttributeLocation("aColor",1);
+    program->addShaderFromSourceFile(QOpenGLShader::Vertex,":/glsl/vsrc.vert");
+    program->addShaderFromSourceFile(QOpenGLShader::Fragment,":/glsl/fsrc.frag");
+    program->bindAttributeLocation("pos",0);
+    program->bindAttributeLocation("color",1);
     program->link();//激活Program对象
     program->bind();
 
-    glGenBuffers(4, &m_vboIds[0]);
+    glGenBuffers(4,&m_vboIds[0]);
     GLfloat triangleVertices[] = {
         0.0f, 1.0f, 0.0f,
         -1.0f,-1.0f, 1.0f,
         1.0f,-1.0f, 1.0f,
-        
+
         0.0f, 1.0f, 0.0f,
         1.0f,-1.0f, 1.0f,
         1.0f,-1.0f, -1.0f,
-        
+
         0.0f, 1.0f, 0.0f,
         1.0f,-1.0f, -1.0f,
         -1.0f,-1.0f, -1.0f,
-        
+
         0.0f, 1.0f, 0.0f,
         -1.0f,-1.0f,-1.0f,
         -1.0f,-1.0f, 1.0f
@@ -52,15 +68,15 @@ void GLWindow::initializeGL()
         1.0f,0.0f,0.0f,
         0.0f,1.0f,0.0f,
         0.0f,0.0f,1.0f,
-        
+
         1.0f,0.0f,0.0f,
         0.0f,0.0f,1.0f,
         0.0f,1.0f,0.0f,
-        
+
         1.0f,0.0f,0.0f,
         0.0f,1.0f,0.0f,
         0.0f,0.0f,1.0f,
-        
+
         1.0f,0.0f,0.0f,
         0.0f,0.0f,1.0f,
         0.0f,1.0f,0.0f
@@ -169,20 +185,33 @@ void GLWindow::initializeGL()
     };
     glBindBuffer(GL_ARRAY_BUFFER, m_vboIds[3]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadColors), quadColors, GL_STATIC_DRAW);
+    program->release();
 }
 
-void GLWindow::resizeGL(int w, int h)
+/* 下面的代码的作用是不管窗口的大小是否已经改变(假定您没有使用全屏模式)都重新设置OpenGL场景的大小。
+ *甚至您无法改变窗口的大小时(例如您在全屏模式下)，它至少仍将运行一次--在程序开始时设置我们的透视图。
+ *OpenGL场景的尺寸将被设置成它显示时所在窗口的大小。 */
+void GLWidget::resizeGL(int w, int h)
 {
     glViewport(0,0,w,qMax(h,1));//设置视角范围
+
     m_projection.setToIdentity();
-    m_projection.perspective(45,(float)w/float(h),1,1000);
+    m_projection.perspective(45,(float)w/(float)h,1,1000);
     m_modelView.setToIdentity();
+
     update();//qt自带的界面刷新函数
 }
 
-void GLWindow::paintGL()
+/* 你想绘制的任何内容都是在下面的函数中
+ *以后的每个教程中我都会在例程的此处增加新的代码。
+ *如果您对OpenGL已经有所了解的话，您可以在glLoadIdentity()调用之后，
+ *试着添加一些OpenGL代码来创建基本的图形。
+ *目前我们所作的全部就是将屏幕清除成我们前面所决定的颜色，清除深度缓存并且重置场景。
+ *此处并没有绘制如何东西。 */
+void GLWidget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_RGBA|GL_ALPHA_BITS);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	//清除屏幕和深度缓存
+    glLoadIdentity();	// 重置当前的模型观察矩阵
 
     program->bind();
     m_modelView.setToIdentity();
@@ -198,8 +227,8 @@ void GLWindow::paintGL()
     glDrawArrays(GL_TRIANGLES, 0, 12);
 
     m_modelView.setToIdentity();
-    m_modelView.translate(1.5f, 0.0f, -7.0f);
-    m_modelView.rotate(m_rquad,1.0f,1.0f,1.0f);
+    m_modelView.translate(1.5f, 0.0f, -6.0f);
+    m_modelView.rotate(m_rquad,1.0f,0.0f,0.0f);
     program->setUniformValue("mvpMatrix", m_projection * m_modelView);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboIds[2]);
     program->enableAttributeArray(0);
@@ -210,8 +239,30 @@ void GLWindow::paintGL()
     glDrawArrays(GL_TRIANGLES, 0, 36);
     program->release();
 
-    m_rtri+=0.2f;
-    m_rquad+=0.15f;
+    m_rtri+=1.0f;
+    m_rquad+=1.0f;
 
     update();
+}
+
+void GLWidget::keyPressEvent(QKeyEvent *event)
+{
+    switch(event->key()){
+    case Qt::Key_F2:
+    {
+        mFullScreen=!mFullScreen;
+        if(mFullScreen){
+            showFullScreen();
+        }else{
+            showNormal();
+        }
+        update();
+        break;
+    }
+    case Qt::Key_Escape:
+    {
+        qApp->exit();
+        break;
+    }
+    }
 }
