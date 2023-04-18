@@ -20,6 +20,10 @@ bool initializeEGL(EGLNativeDisplayType nativedisplay, EGLNativeWindowType nativ
     return false;
   }
 
+  if(eglBindAPI(EGL_OPENGL_API)){
+    fprintf(stderr,"eglBindAPI failed: %d\n",eglGetError());
+  }
+
   EGLint attr[] = {
     EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
     EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
@@ -104,11 +108,13 @@ int main(int argc, char *argv[])
   const GLubyte *flag = glGetString(GL_RENDERER);         //返回一个渲染器标识符，通常是个硬件平台
   const GLubyte *OpenGLVersion = glGetString(GL_VERSION); //返回当前OpenGL实现的版本号
   const GLubyte *gluVersion = gluGetString(GLU_VERSION);  //返回当前GLU工具库版本
+  const GLubyte *glsl = glGetString(GL_SHADING_LANGUAGE_VERSION);
 
   printf("OpenGL实现厂商的名字：%s\n", name);
   printf("渲染器标识符：%s\n", flag);
   printf("OpenGL实现的版本号：%s\n", OpenGLVersion);
   printf("OGLU工具库版本：%s\n", gluVersion);
+  printf("GLSL版本：%s\n",glsl);
 
   mainloop(xdisplay, display, surface);
 
