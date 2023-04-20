@@ -1,5 +1,11 @@
 #include "glwidget.h"
 
+QVector3D globalAmbient = QVector3D(1.2f,1.0f,2.0f);//全局环境光
+
+//自定义灯光
+QVector3D lightPos = QVector3D(2.5f,2.0f,10.0f);//自定义灯光位置
+QVector3D eyePos = QVector3D(0.0f,0.0f,8.0f);
+
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , mFullScreen(false)
@@ -41,6 +47,7 @@ void GLWidget::initializeGL()
     program->addShaderFromSourceFile(QOpenGLShader::Fragment,":/glsl/fsrc.frag");
     program->bindAttributeLocation("pos",0);
     program->bindAttributeLocation("texCoord",1);
+    program->bindAttributeLocation("a_normal",2);
     program->link();//激活Program对象
     program->bind();
 
@@ -49,40 +56,40 @@ void GLWidget::initializeGL()
 
     float vertices[]={
         // Front face
-        -1.0f, -1.0f, 1.0f,0.0f,0.0f,
-        1.0f, -1.0f, 1.0f,1.0f,0.0f,
-        1.0f, 1.0f, 1.0f,1.0f,1.0f,
-        -1.0f, 1.0f, 1.0f,0.0f,1.0f,
+        -1.0f, -1.0f, 1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,
+        1.0f, -1.0f, 1.0f,1.0f,0.0f,0.0f,0.0f,1.0f,
+        1.0f, 1.0f, 1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,
+        -1.0f, 1.0f, 1.0f,0.0f,1.0f,0.0f,0.0f,1.0f,
 
         // Back face
-        -1.0f, -1.0f, -1.0f,1.0f,0.0f,
-        -1.0f, 1.0f, -1.0f,1.0f,1.0f,
-        1.0f, 1.0f, -1.0f,0.0f,1.0f,
-        1.0f, -1.0f, -1.0f,0.0f,0.0f,
+        -1.0f, -1.0f, -1.0f,1.0f,0.0f,0.0f,0.0f,-1.0f,
+        -1.0f, 1.0f, -1.0f,1.0f,1.0f,0.0f,0.0f,-1.0f,
+        1.0f, 1.0f, -1.0f,0.0f,1.0f,0.0f,0.0f,-1.0f,
+        1.0f, -1.0f, -1.0f,0.0f,0.0f,0.0f,0.0f,-1.0f,
 
         // Top face
-        -1.0f, 1.0f, -1.0f,0.0f,1.0f,
-        -1.0f, 1.0f, 1.0f,0.0f,0.0f,
-        1.0f, 1.0f, 1.0f,1.0f,0.0f,
-        1.0f, 1.0f, -1.0f,1.0f,1.0f,
+        -1.0f, 1.0f, -1.0f,0.0f,1.0f,0.0f,1.0f,0.0f,
+        -1.0f, 1.0f, 1.0f,0.0f,0.0f,0.0f,1.0f,0.0f,
+        1.0f, 1.0f, 1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,
+        1.0f, 1.0f, -1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,
 
         // Bottom face
-        -1.0f, -1.0f, -1.0f,1.0f,1.0f,
-        1.0f, -1.0f, -1.0f,0.0f,1.0f,
-        1.0f, -1.0f, 1.0f,0.0f,0.0f,
-        -1.0f, -1.0f, 1.0f,1.0f,0.0f,
+        -1.0f, -1.0f, -1.0f,1.0f,1.0f,0.0f,-1.0f,0.0f,
+        1.0f, -1.0f, -1.0f,0.0f,1.0f,0.0f,-1.0f,0.0f,
+        1.0f, -1.0f, 1.0f,0.0f,0.0f,0.0f,-1.0f,0.0f,
+        -1.0f, -1.0f, 1.0f,1.0f,0.0f,0.0f,-1.0f,0.0f,
 
         // Right face
-        1.0f, -1.0f, -1.0f,1.0f,0.0f,
-        1.0f, 1.0f, -1.0f,1.0f,1.0f,
-        1.0f, 1.0f, 1.0f,0.0f,1.0f,
-        1.0f, -1.0f, 1.0f,0.0f,0.0f,
+        1.0f, -1.0f, -1.0f,1.0f,0.0f,1.0f,0.0f,0.0f,
+        1.0f, 1.0f, -1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,
+        1.0f, 1.0f, 1.0f,0.0f,1.0f,1.0f,0.0f,0.0f,
+        1.0f, -1.0f, 1.0f,0.0f,0.0f,1.0f,0.0f,0.0f,
 
         // Left face
-        -1.0f, -1.0f, -1.0f,0.0f,0.0f,
-        -1.0f, -1.0f, 1.0f,1.0f,0.0f,
-        -1.0f, 1.0f, 1.0f,1.0f,1.0f,
-        -1.0f, 1.0f, -1.0f,0.0f,1.0f,
+        -1.0f, -1.0f, -1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f,
+        -1.0f, -1.0f, 1.0f,1.0f,0.0f,-1.0f,0.0f,0.0f,
+        -1.0f, 1.0f, 1.0f,1.0f,1.0f,-1.0f,0.0f,0.0f,
+        -1.0f, 1.0f, -1.0f,0.0f,1.0f,-1.0f,0.0f,0.0f,
     };
 
     vbo.create();
@@ -91,8 +98,10 @@ void GLWidget::initializeGL()
 
     program->enableAttributeArray(0);
     program->enableAttributeArray(1);
-    program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 5*sizeof(GLfloat));
-    program->setAttributeBuffer(1, GL_FLOAT, 3*sizeof(GLfloat), 2, 5*sizeof(GLfloat));
+    program->enableAttributeArray(2);
+    program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 8*sizeof(GLfloat));
+    program->setAttributeBuffer(1, GL_FLOAT, 3*sizeof(GLfloat), 2, 8*sizeof(GLfloat));
+    program->setAttributeBuffer(2,GL_FLOAT,5*sizeof(GLfloat),3,8*sizeof(GLfloat));
 
     texture = new QOpenGLTexture(img);
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
@@ -112,7 +121,6 @@ void GLWidget::resizeGL(int w, int h)
     glViewport(0,0,w,qMax(h,1));//设置视角范围
     m_projection.setToIdentity();
     m_projection.perspective(45,(float)w/float(h),1,1000);
-    m_modelView.setToIdentity();
     update();//qt自带的界面刷新函数
 }
 
@@ -130,12 +138,22 @@ void GLWidget::paintGL()
     program->bind();
     vbo.bind();
 
-    m_modelView.setToIdentity();
-    m_modelView.translate(0.0f, 0.0f, -5.0f);
-    m_modelView.rotate(m_xrot, 1.0, 0.0, 0.0);
-    m_modelView.rotate(m_yrot, 0.0, 1.0, 0.0);
-    m_modelView.rotate(m_zrot, 0.0, 0.0, 1.0);
-    program->setUniformValue("mvpMatrix", m_projection * m_modelView);
+    QMatrix4x4 viewMatrix;
+    viewMatrix.lookAt(eyePos,QVector3D(0,0,-20),QVector3D(0,1,0));
+
+    QMatrix4x4 modelMatrix;
+    modelMatrix.setToIdentity();
+    modelMatrix.translate(0.0f, 0.0f, -5.0f);
+    modelMatrix.rotate(m_xrot, 1.0, 0.0, 0.0);
+    modelMatrix.rotate(m_yrot, 0.0, 1.0, 0.0);
+    modelMatrix.rotate(m_zrot, 0.0, 0.0, 1.0);
+
+    QMatrix4x4 mvpMatrix = m_projection * viewMatrix * modelMatrix;
+    program->setUniformValue("mvpMatrix", mvpMatrix);
+    program->setUniformValue("modelMatrix",modelMatrix);
+    program->setUniformValue("viewPos",eyePos);
+    program->setUniformValue("lightPos",lightPos);
+    program->setUniformValue("lightColor",globalAmbient);
 
     if(texture->isCreated()) texture->bind();
 

@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <QImage>
 #include <QOpenGLTexture>
+#include <QVector4D>
 
 class GLWidget : public QOpenGLWidget,public QOpenGLFunctions
 {
@@ -40,7 +41,6 @@ private:
     QOpenGLBuffer vao,vbo;
 
     QMatrix4x4 m_projection;
-    QMatrix4x4 m_modelView;
     GLfloat m_xrot;
     GLfloat m_yrot;
     GLfloat m_zrot;
